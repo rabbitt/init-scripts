@@ -1,0 +1,30 @@
+#/usr/bin/env bash
+
+while getopts 'v' opt; do
+  case "${opt}" in
+    v) ruby -v; exit;;
+  esac
+done
+
+if [ -s /opt/local/bin/ruby ]; then
+  use_system=1 # switch to using system
+else
+  use_system=0 # switch to using macports ruby
+fi
+
+for file in /opt/local/bin/*1.9; do
+  if [ $use_system -eq 0 ]; then
+    [ ! -L ${file/1.9} ] && sudo ln -snf ${file} ${file/1.9}
+  else
+    [ -L ${file/1.9} ] && sudo rm -f ${file/1.9}
+  fi
+done
+
+hash -d ruby &>-
+type ruby &>-
+
+if [ $(ruby -v | awk '{ print $2 }') = "1.8.7" ]; then
+  echo "Now using System Ruby (1.8.7)"
+else
+  echo "Now using Macports Ruby (1.9.3)"
+fi

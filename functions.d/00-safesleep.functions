@@ -1,0 +1,61 @@
+
+function safesleep() {
+  if [ $# -ne 1 ]; then
+    show_hibernate_mode
+    return 1
+  fi
+
+  case $1 in
+    on*)
+      sudo pmset -a hibernatemode 3
+      if [ $(get_hibernate_mode) -ne 3 ]; then
+        echo "Unable to turn Safe Sleep mode on - current mode is: $(show_hibernate_mode)"
+        return 1
+      fi
+      ;;
+    of*)
+      sudo pmset -a hibernatemode 0
+      if [ $(get_hibernate_mode) -ne 0 ]; then
+        echo "Unable to turn Safe Sleep mode off - current mode is: $show_hibernate_mode)"
+        return 1
+      fi
+      ;;
+    hi*)
+      sudo pmset -a hibernatemode 1
+      if [ $(get_hibernate_mode) -ne 1 ]; then
+        echo "Unable to turn Hibernate mode on - current mode is: $(show_hibernate_mode)"
+        return 1
+      fi
+      ;;
+    0|1|3|5|7)
+      sudo pmset -a hibernatemode $1
+      if [ $(get_hibernate_mode) -ne $1 ]; then
+        echo "Unable to set hibernate mode to $1 - current mode is: $(show_hibernate_mode)"
+        return 1
+      fi
+      ;;
+    *)
+      echo "unknown mode: '$(bright_magenta $1)'"
+      show_hibernate_mode
+      return 1
+      ;;
+  esac
+
+  echo "Hibernate mode is now: $(show_hibernate_mode)"
+
+  return 0
+}
+
+function get_hibernate_mode() {
+  sudo pmset -g | grep hibernatemode | awk '{ print $2 }' | tr -d "\n "
+}
+
+function show_hibernate_mode() {
+  case $(get_hibernate_mode) in
+    0) echo "Safe Sleep $(bright_red off), Fast Wake $(bright_green enabled)";;
+    1) echo "Hibernation $(bright_green on), Fast Wake $(bright_red disabled)";;
+    3) echo "Safe Sleep $(bright_green on), Fast Wake $(bright_green enabled) unless total power loss";;
+    5) echo "Secure Hibernation $(bright_green on), Fast Wake $(bright_red disabled)";;
+    7) echo "Secure Safe Sleep $(bright_green on), Fast Wake $(bright_green enabled) unless total power loss";;
+  esac
+}

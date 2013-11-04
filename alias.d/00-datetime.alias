@@ -1,0 +1,1 @@
+alias datetime='date +%Y%m%d%k%M%S'

@@ -1,0 +1,5 @@
+# anything you want to setup prior to importing all aliases,
+# env variables and functions should go here
+
+# for debugging - shows every line as they execute
+# set -x

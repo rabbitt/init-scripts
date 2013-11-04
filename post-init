@@ -1,0 +1,9 @@
+# after loading our environment (aliases, functions and env variables)
+# this is where you would run any functions or anything else to complete your setup
+
+# setup prompt
+prompt
+
+# load ssh public keys
+load_public_key_agent
+

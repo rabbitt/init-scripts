@@ -1,0 +1,2 @@
+alias attach='screen -d -RR -S'
+alias slist='screen -list'

@@ -1,0 +1,65 @@
+function commafy() {
+  for arg in ${@}; do
+    echo ${arg} | perl -pi -e 's/(\d)(?=(\d{3})+(\D|$))/$1\,/g'
+  done
+}
+
+function check_certificate_key() {
+  local key=$1 cert=$2
+  if [ -z "${key}" -o ! -r "${key}" -o $(grep -c -- "PRIVATE KEY-----" "${key}") -eq 0 ]; then
+    brighred "argument 1 must be a valid path to a key file\n"
+    return 1
+  elif [ -z "${cert}" -o ! -r "${cert}" -o $(grep -c -- "-----BEGIN CERTIFICATE-----" "${cert}") -eq 0 ]; then
+    brightred "argument 2 must be a valid path to a certificate file\n"
+    return 1
+  fi
+
+  cert_hash="$(openssl x509 -noout -modulus -in "${cert}" | openssl md5)"
+  key_hash="$(openssl rsa -noout -modulus -in "${key}" | openssl md5)"
+  if [ "${cert_hash}" = "${key_hash}" ]; then
+    brightgreen "Certificate was generated using the given key\n"
+    return 0
+  else
+    brightred "Certificate/Key mismatch.\n"
+    return 1
+  fi
+}
+
+function get_ssh_key_files() {
+  local list=
+  for keyfile in $(/usr/bin/egrep -c 'BEGIN.+PRIVATE KEY' ~/.ssh/* | grep :1 | cut -d: -f1); do
+    ssh-keygen -l -f ${keyfile}.pub &>/dev/null && list="${list} $(basename ${keyfile})"
+  done
+  echo $list
+}
+
+function load_public_key_agent() {
+	local keys="$*"
+  which -s keychain || return 0
+  eval $(keychain --eval --agents ssh --inherit any $(get_ssh_key_files))
+}
+
+function generate_password() {
+  charspool=(
+    'a' 'b' 'c' 'd' 'e' 'f' 'g' 'h' 'i' 'j' 'k' 'l' 'm' 'n' 'o' 'p'
+    'q' 'r' 's' 't' 'u' 'v' 'w' 'x' 'y' 'z' '0' '1' '2' '3' '4' '5' '6' '7'
+    '8' '9' '0' 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O'
+    'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z' '=' '.' ',' '-' '_'
+  );
+
+  len=${#charspool[*]}
+
+  if [ $# -lt 1 ]; then
+    num=16;
+  else
+    num=$1;
+  fi
+
+  password=""
+  for (( i = 0; i < $num; i++ )); do
+    password="${password}${charspool[$((RANDOM % len))]}"
+  done
+
+  lightcyan "${password}\n"
+}
+

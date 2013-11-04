@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+
+if ! git rootdir &>/dev/null; then
+  echo "$(basename $0): couldn't find .git directory - are you in a git repository?"
+  exit 1
+fi
+
+get_head_branch()
+{
+    git branch -a | grep HEAD | awk '{ print $3 }'
+}
+
+get_head_branch_short()
+{
+    get_head_branch | cut -d/ -f2-
+}
+
+get_merged_branch_list()
+{
+  for branch in $(git branch -r |grep -vP "$(get_head_branch)$"); do
+    [ $(echo ${branch} | grep -ciP '^origin/(d(aily|evelop)|release|hotfix|pro(ject|duction))') -ge 1 ] && continue
+    git branch -r --contains $branch | grep -q $(get_head_branch) && echo ${branch}
+  done
+}
+
+[[ "$@" = *-y* ]] && force=1 || force=0
+force=0
+if [[ "$@" = *-y* ]]; then
+  force=1
+fi
+
+ask()
+{
+  prompt="$1"
+  prompt="${prompt:-Are you sure?}"
+  while true; do
+    read -p "${prompt} (yes/no): " answer
+    echo -en "${answer}" | grep -qiP '^(yes|no)$' && break
+  done
+  [ "$(echo $answer | tr '[A-Z]' '[a-z]')" = "yes" ] && return 0 || return 1
+}
+
+join_paths() 
+{
+  echo -en "$@" | tr ' \n\t' '/'
+}
+
+split() 
+{
+  [ $# -ne 2 ] && return 1
+  echo -en "$1" | tr "$2" ' '
+}
+
+get_field()
+{
+  [ $# -ne 3 ] && return 1
+  local string="$1" delim="$2" field="$3"
+  echo -en "${string}" | cut -d${delim} -f${field}
+}
+
+get_field_to_end()
+{
+  [ $# -ne 3 ] && return 1
+  local string="$1" delim="$2" field="$3"
+  echo -en "${string}" | cut -d${delim} -f${field}-
+}
+
+branches="$(get_merged_branch_list)"
+for branch in ${branches}; do
+  test ${force} -eq 1 || ask "remove previously merged branch '${branch}'"  && remove=1 || remove=0
+  [ ${remove} -eq 1 ] && git push $(get_field $branch "/" 1) :$(get_field_to_end $branch "/" 2)
+done
+

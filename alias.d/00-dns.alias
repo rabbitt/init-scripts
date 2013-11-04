@@ -1,0 +1,5 @@
+alias dns='nslookup -sil'
+alias flushdns='dscacheutil -flushcache'
+alias dig-simple='dig +noall +answer'
+alias dig='dig-simple +stats'
+alias dig-auth='dig-simple +authority'

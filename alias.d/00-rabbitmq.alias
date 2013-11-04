@@ -1,0 +1,2 @@
+alias rabbitmq-plugins='sudo rabbitmq-plugins'
+alias rabbitmqctl='sudo rabbitmqctl'

@@ -1,0 +1,18 @@
+bc_path="$(dirname $(readlink -f ${BASH_SOURCE[0]}))"
+bash=${BASH_VERSION%.*}; bmajor=${bash%.*}; bminor=${bash#*.}
+
+# interactive shell
+if [ "$PS1" ]; then
+  if [ $bmajor -eq 2 -a $bminor -ge 4 ] || [ $bmajor -ge 3 ]; then
+    if [ -f "${bc_path}/bash_completion" ]; then
+      source "${bc_path}/bash_completion"
+    fi
+    if [ -d ~/.bash_completion.d ] ; then
+      for file in ~/.bash_completion.d/* ; do
+        [ -f $file ] && . $file
+      done
+    fi
+  fi
+fi
+
+unset bash bmajor bminor bc_path

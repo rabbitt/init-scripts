@@ -1,0 +1,8 @@
+alias dir='ls -lasF'
+alias dirh='ls -lshL'
+alias d='ls --color'
+alias ll='ls -l'
+alias ls='ls --color=auto'
+alias dstat='df -h | grep Filesystem ; df -h | grep ^/dev/[a-z]*[0-9]* | sort'
+alias duh='du -h --max-depth=1'
+alias rm='rm -i'

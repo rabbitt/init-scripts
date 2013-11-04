@@ -1,0 +1,45 @@
+#!/bin/env bash
+
+HOST="$(hostname -s)"
+BUNDLE="${HOST}.sparsebundle"
+SIZE=""
+
+if [ -d "${BUNDLE}" ]; then
+ echo "A bundle directory '${BUNDLE}' already exists in the current directory - please remove it before proceeding"
+ exit 1
+elif [ -e "${BUNDLE}" ]; then
+ echo "A file with the name '${BUNDLE}' already exists in the current directory - please remove it before proceeding"
+ exit 1
+fi
+
+echo "-- Enabling Unsupported Network Volumes (e.g., Samba Shares)"
+defaults write com.apple.systempreferences TMShowUnsupportedNetworkVolumes 1
+
+echo "-- Preparing to build a Sparse Bundle Image:"
+while [ $(echo ${SIZE} | egrep -c '^[0-9]+$') -eq 0 ]; do
+ echo -en "   * What is the maximum size you want to enforce on your backup image (in Gigabytes, e.g., 100): "
+ read SIZE
+done
+
+echo -n "   * Building... "
+hdiutil create -size ${SIZE}g -fs HFS+J -volname 'Time Machine Backups' -type SPARSEBUNDLE -verbose "${BUNDLE}"
+
+echo "-- Determining Hardware UUID..."
+UUID=$(system_profiler 2>&- | grep 'Hardware UUID'  | awk '{ print $3 }')
+
+echo "-- Generating TimeMachine plist..."
+cat << EOF >> "${BUNDLE}/com.apple.TimeMachine.MachineID.plist"
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+ <dict>
+ <key>com.apple.backupd.HostUUID</key>
+ <string>${UUID}</string>
+ </dict>
+</plist>
+EOF
+
+echo
+echo "Bundle is now ready for use. Please move the bundle to the network location that you will use for backups."
+echo "The bundle is located at: ${PWD}/${BUNDLE}"
+echo

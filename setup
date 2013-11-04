@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+function setup() {
+  local script_path=$(dirname $(readlink -f $0))
+  local funcpath="${script_path}/functions.d"
+
+  local fq_initscript_path="${HOME}/.init-scripts"
+  local initscripts="~/.init-scripts"
+
+  local init_path="${initscripts}/init.sh"
+  local pre_init="${initscripts}/pre-init"
+  local post_init="${initscripts}/post-init"
+
+  source ${funcpath}/00-color.functions
+
+  if [ ! -d ${fq_initscript_path} ]; then
+    if [ ! -s ${fq_initscript_path} ]; then
+      brightgreen "Symlinking $(cyan ${initscripts}) -> $(cyan ${script_path})"
+      ln -snf "${script_path}" ${fq_initscript_path}
+    fi
+  fi
+
+  if  ! grep -qe "${init_path}" "${HOME}/.bashrc"; then
+    echo "$(brightgreen "adding") $(default_color "initialize script to") $(magenta "${HOME}/.bashrc")"
+    echo "[ -f ${init_path} ] && source ${init_path}" >> ~/.bashrc
+  fi
+
+  if ! grep -qe "\.bashrc" "${HOME}/.bash_profile"; then
+    echo "[ -f ~/.bashrc ] && source ~/.bashrc" >> ~/.bash_profile
+  fi
+
+  if [ ! -d "${HOME}/bin" ]; then
+    ln -snf "${script_path}/bin" "${HOME}/bin"
+  fi
+
+  if [ ! -d "${HOME}/.bash_completion.d" ]; then
+    ln -snf "${script_path}/3rdparty.d/bash_completion.d" ~/.bash_completion.d
+  fi
+}
+
+setup
+unset setup

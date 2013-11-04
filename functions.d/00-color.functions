@@ -1,0 +1,87 @@
+
+function colors() {
+  local with_numbers=$#
+  local color number
+
+  for color in black:30 red:31 green:32 yellow:33 blue:34 magenta:35 cyan:36 white:37; do
+    read color number <<< "${color/:/ }"
+    if [ ${with_numbers} -ne 0 ]; then
+      echo "${color} ${number}"
+    else
+      echo "${color}"
+    fi
+  done | column -t
+}
+
+function color() {
+  local light=0
+  local color=0
+  local blinking=0
+
+  local text="$*" name=""
+
+  [[ "${text}" = *norm* ]] && echo -en "\033[0;0m" && return 0
+  [[ "${text}" = *blink* ]] && blinking=1
+  [[ "${text}" = *light* || "${text}" = *bright* ]] && light=1
+
+  case "$text" in
+    *black*) color=30;;
+    *red*) color=31;;
+    *green*) color=32;;
+    *yellow*) color=33;;
+    *blue*) color=34;;
+    *magenta*) color=35;;
+    *cyan*) color=36;;
+    *white*) color=37;;
+  esac
+
+  if [ $blinking -eq 1 ]; then
+    echo -en "033[${light};5;${color}m"
+  else
+    echo -en "\033[${light};${color}m"
+  fi
+}
+
+function colorize() {
+  local color="$1"
+  local text="$2"
+  echo -en "$(color "${color}")${text}$(color norm)"
+}
+
+function setup_color_functions() {
+  local _color= style=
+  for _color in $(colors); do
+    for style in blinking{{,_}{bright,light}{_,},_,} {bright,light}{_,} ""; do
+      eval "function ${style}${_color}() { [ \$# -ge 1 ] && colorize ${style}${_color} "'"'"\$@"'"'" || color ${style}${_color}; }"
+      eval "function ${style}${_color}_escaped() { color ${style}${_color} | cat -A; }"
+    done
+  done
+}
+setup_color_functions
+
+function default_color() { color norm; }
+function normal_color() { color norm; }
+
+function colorchart() {
+  local _color=
+
+  bright_white "Non-Blinking:\n"
+  printf "\t%-10s %-15s   %-15s\n" COLOR NORMAL LIGHT
+  for _color in $(colors); do
+    color_code="$(eval ${_color})"
+    color_code_esc=$(eval ${_color} | cat -A | sed -e 's|\^\[|\\033|g')
+    lightcolor_code="$(eval light${_color})"
+    lightcolor_code_esc=$(eval light${_color} | cat -A | sed -e 's|\^\[|\\033|g')
+    printf "\t${color_code}%-10s %-15s   ${lightcolor_code}%-15s\n" ${_color} ${color_code_esc} ${lightcolor_code_esc}
+  done
+
+  blinking_bright_white "Blinking:\n"
+  printf "\t%-10s %-15s   %-15s\n" COLOR NORMAL LIGHT
+  for _color in $(colors); do
+    color_code="$(eval ${_color})"
+    color_code_esc=$(eval blinking_${_color} | cat -A | sed -e 's|\^\[|\\033|g')
+    lightcolor_code="$(eval light${_color})"
+    lightcolor_code_esc=$(eval blinking_light${_color} | cat -A | sed -e 's|\^\[|\\033|g')
+    printf "\t${color_code}%-10s %-15s   ${lightcolor_code}%-15s\n" ${_color} ${color_code_esc} ${lightcolor_code_esc}
+  done
+}

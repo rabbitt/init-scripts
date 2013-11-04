@@ -1,0 +1,77 @@
+source ~/.scripts/functions
+
+[[ -z "${CORES}" ]] && export CORES=$(if [ $(uname -s) = Linux ]; then grep -c ^processor /proc/cpuinfo; elif [ $(uname -s) = Darwin ]; then sysctl -n hw.ncpu; else 1; fi)
+[[ "${PROMPT_COMMAND}" != *set_last_exitcode* ]] && export PROMPT_COMMAND="set_last_exitcode;${PROMPT_COMMAND}"
+
+function jobcount() {
+  local count=$(jobs | wc -l)
+  if [ ${count} -ge 1 ]; then
+    echo -en "$(white)-[$(cyan)jobs:$(bright_red)${count}$(white)]-"
+  else
+    echo -en "$(white)-[$(cyan)jobs:$(bright_white)0$(white)]-"
+  fi
+}
+
+function current_git_branch() {
+  local branch_name="$(git for-each-ref --format='%(refname:short)' $(git symbolic-ref HEAD 2>/dev/null) 2>/dev/null | head -n1)"
+  if [ ! -z "${branch_name}" ]; then
+    echo -en "$(white)-[$(cyan)branch:$(bright_red)${branch_name}$(white)]-"
+  fi
+}
+
+function load_color() {
+  num="$@"
+  if [ $(echo "scale=10; ${num} / ${CORES} >= 1.5" | bc) -eq 1 ]; then
+    brightred ${num}
+  elif [ $(echo "scale=10; ${num} / ${CORES} >= 0.8" | bc) -eq 1 ]; then
+    brightyellow ${num}
+  else
+    brightgreen ${num}
+  fi
+}
+
+function load() {
+  read five ten fifteen <<< $(uptime | sed -e 's|^.*load average: ||g' | tr -d ',')
+  echo -en "$(white)-[$(cyan)load:$(load_color ${five}) $(load_color ${ten}) $(load_color ${fifteen})$(white)]-"
+}
+
+function lec() {
+  local status=${LEC}
+  status=${status:=0}
+  if [ $status -ge 1 ]; then
+    echo -en "$(white)-[$(cyan)last_exit_code:$(brightred)${status}$(white)]-"
+  elif [ $status -lt 0 ]; then
+    echo -en "$(white)-[$(cyan)last_exit_code:$(brightyellow)${status}$(white)]-"
+  else
+    echo -en "$(white)-[$(cyan)last_exit_code:$(brightgreen)${status}$(white)]-"
+  fi
+}
+
+function set_last_exitcode() { export LEC=$?; }
+
+function rubyversion() {
+  hash -d ruby &>/dev/null
+  type ruby &>/dev/null
+
+  read prog ver other <<< $(ruby -v)
+  echo -en "$(white)-[$(cyan)rv:$(brightgreen ${ver})$(white)]-"
+}
+
+function prompt() {
+  local TTY=$(tty | sed -r -e 's|/dev/||g')
+  local host="$(hostname -f)"
+
+  if [ "$(whoami)" = 'root' ]; then
+    local USERNAME="$(whoami | awk '{ print(toupper($1)) }')"
+    host="$(echo ${host} | awk '{ print(toupper($1)) }')"
+    PS1="\n${TITLEBAR}$(white)-[$(brightred)${USERNAME}$(yellow)@$(bright_blue)${host}$(white)]- "
+  else
+    PS1="\n${TITLEBAR}$(white)-[$(yellow)\u$(white)@$(bright_blue)${host}$(white)]- "
+  fi
+
+  PS1="${PS1}-[$(brightblue)\d - \A$(white)]- -[$(brightblack)${TTY}$(white)]-\n\$(jobcount) \$(lec) \$(load) \$(rubyversion) \$(current_git_branch)\n"
+  PS1="${PS1}$(white)-[$(cyan)\w$(white)]-\n"
+  PS1="${PS1}\[$(yellow)\]\$\[$(normal_color)\] "
+  PS2="$(brightcyan)-$(cyan)-$(brightblack)-$(normal_color) "
+  export PS1 PS2
+}

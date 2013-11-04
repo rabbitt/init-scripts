@@ -1,0 +1,1 @@
+alias pstat='ps -eo pid,user,pgrp,args --sort user'

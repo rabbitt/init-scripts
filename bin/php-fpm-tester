@@ -1,0 +1,28 @@
+#!/bin/bash
+
+_env="${1%%.*}"
+_link="${_env}"
+_host="${1%%/*}"
+_uri="/${1#*/}"
+
+[[ ${_host} == *:* ]] || _host="${_host}:9001"
+[[ ${_env} == www ]] && _link=production
+[[ ${_env} == st* ]] && _link=staging
+
+for name in $(env | grep -P '^[\w_]+=' | tr '=' ' ' | awk '{ print $1 }'); do
+  unset $name
+done
+/opt/local/libexec/gnubin/env >&2
+
+export HTTP_HOST="${_host%%:*}"
+export DOCUMENT_ROOT="/var/www/vhosts.d/${_env}.opensky.com/${_link}/web"
+export QUERY_STRING="${_uri##*\?}"
+export REQUEST_METHOD="GET"
+export REQUEST_URI="${_uri%%\?*}"
+export SCRIPT_NAME="${REQUEST_URI}"
+export SCRIPT_FILENAME="${DOCUMENT_ROOT}/index.php"
+export PATH_INFO="${REQUEST_URI}"
+export PATH_TRANSLATED="${DOCUMENT_ROOT}/${REQUEST_URI}"
+
+/opt/local/bin/cgi-fcgi -bind -connect php01.${_host}
+
