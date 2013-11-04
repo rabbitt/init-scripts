@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+require 'pp'
+require 'pathname'
+
+no_newline = ARGV.delete('-n')
+show_help = ARGV.delete('-h') || ARGV.delete('--help')
+
+ARGV.collect {|arg| arg =~ /^-/ && ARGV.delete(arg) }
+
+if show_help || ARGV.empty?
+  puts "Usage: readlink [-n] [-f] FILE"
+  exit 1
+end
+
+if no_newline
+  print Pathname.new(ARGV.first).realpath
+else
+  puts Pathname.new(ARGV.first).realpath
+end

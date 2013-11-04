@@ -1,7 +1,19 @@
 #!/usr/bin/env bash
 
+case "$(uname -s)" in
+  Darwin)
+    export readlink="$(ruby -rpathname -e "print Pathname.new('$0').realpath.dirname")/bin/ruby-readlink";;
+  Linux)
+    export readlink="$(which readlink)";;
+  *)
+    echo "Unsupported OS: $(uname -s)"
+    exit 1;;
+esac
+
 function setup() {
-  local script_path=$(dirname $(readlink -f $0))
+  set -e
+
+  local script_path=$(dirname $($readlink -f $0))
   local funcpath="${script_path}/functions.d"
 
   local fq_initscript_path="${HOME}/.init-scripts"
@@ -36,7 +48,10 @@ function setup() {
   if [ ! -d "${HOME}/.bash_completion.d" ]; then
     ln -snf "${script_path}/3rdparty.d/bash_completion.d" ~/.bash_completion.d
   fi
+
+  echo "Setup complete - please reopen your console, or type: source ~/.bashrc"
+  echo "Note: the provided prompt works best with a black/gray background/foreground."
 }
 
 setup
-unset setup
+unset setup readlink
