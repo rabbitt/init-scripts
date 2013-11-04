@@ -1,14 +1,4 @@
-case "$(uname -s)" in
-  Darwin)
-    export readlink="$(ruby -rpathname -e "print Pathname.new('$0').realpath.dirname")/bin/ruby-readlink";;
-  Linux)
-    export readlink="$(which readlink)";;
-  *)
-    echo "Unsupported OS: $(uname -s)"
-    exit 1;;
-esac
-
-root_path=$(dirname $($readlink -f ${BASH_SOURCE[0]}))
+root_path="${HOME}/.init-scripts"
 
 # preinit
 source  ${root_path}/pre-init

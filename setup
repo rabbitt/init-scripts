@@ -1,19 +1,9 @@
 #!/usr/bin/env bash
 
-case "$(uname -s)" in
-  Darwin)
-    export readlink="$(ruby -rpathname -e "print Pathname.new('$0').realpath.dirname")/bin/ruby-readlink";;
-  Linux)
-    export readlink="$(which readlink)";;
-  *)
-    echo "Unsupported OS: $(uname -s)"
-    exit 1;;
-esac
-
 function setup() {
   set -e
 
-  local script_path=$(dirname $($readlink -f $0))
+  local script_path="${HOME}/.init-scripts"
   local funcpath="${script_path}/functions.d"
 
   local fq_initscript_path="${HOME}/.init-scripts"

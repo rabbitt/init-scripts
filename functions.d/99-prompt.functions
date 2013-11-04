@@ -1,5 +1,3 @@
-source ~/.scripts/functions
-
 [[ -z "${CORES}" ]] && export CORES=$(if [ $(uname -s) = Linux ]; then grep -c ^processor /proc/cpuinfo; elif [ $(uname -s) = Darwin ]; then sysctl -n hw.ncpu; else 1; fi)
 [[ "${PROMPT_COMMAND}" != *set_last_exitcode* ]] && export PROMPT_COMMAND="set_last_exitcode;${PROMPT_COMMAND}"
 
@@ -31,7 +29,7 @@ function load_color() {
 }
 
 function load() {
-  read five ten fifteen <<< $(uptime | sed -e 's|^.*load average: ||g' | tr -d ',')
+  read five ten fifteen <<< $(uptime | perl -pi -e 's|^.*load averages?: ||g' | tr -d ',')
   echo -en "$(white)-[$(cyan)load:$(load_color ${five}) $(load_color ${ten}) $(load_color ${fifteen})$(white)]-"
 }
 
