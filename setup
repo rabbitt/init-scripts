@@ -1,9 +1,19 @@
 #!/usr/bin/env bash
 
+function readlink() {
+  local _readlink="$(which readlink)"
+
+  if ${_readlink} --version . 2>&1 | grep -q GNU
+    ${_readlink} -f "$@"
+  else
+    perl -e "use Cwd qw(abs_path); print abs_path(glob('$@'));"
+  fi
+}
+
 function setup() {
   set -e
 
-  local script_path="${HOME}/.init-scripts"
+  local script_path="$(dirname $(readlink $0))"
   local funcpath="${script_path}/functions.d"
 
   local fq_initscript_path="${HOME}/.init-scripts"

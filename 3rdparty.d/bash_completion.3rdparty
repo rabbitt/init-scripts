@@ -1,4 +1,4 @@
-bc_path="$(dirname $(readlink -f ${BASH_SOURCE[0]}))"
+bc_path="$(dirname $(readlink ${BASH_SOURCE[0]}))"
 bash=${BASH_VERSION%.*}; bmajor=${bash%.*}; bminor=${bash#*.}
 
 # interactive shell

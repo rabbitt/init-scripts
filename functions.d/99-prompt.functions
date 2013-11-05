@@ -56,7 +56,7 @@ function rubyversion() {
 }
 
 function prompt() {
-  local TTY=$(tty | sed -r -e 's|/dev/||g')
+  local TTY=$(tty | perl -pi -e 's|/dev/||g')
   local host="$(hostname -f)"
 
   if [ "$(whoami)" = 'root' ]; then
