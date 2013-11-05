@@ -1,4 +1,4 @@
-if ls --version 2>&1 | grep GNU; then
+if ls --version 2>&1 | grep -q GNU; then
   alias d='ls --color'
 else
   alias d='ls -G'

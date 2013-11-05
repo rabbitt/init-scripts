@@ -1,18 +1,39 @@
 bc_path="$(dirname $(readlink ${BASH_SOURCE[0]}))"
 bash=${BASH_VERSION%.*}; bmajor=${bash%.*}; bminor=${bash#*.}
+if [ $bmajor -gt 3 ] || [ $bmajor -eq 3 -a $bminor -ge 2 ]; then
+  _load_completions() {
+    declare f x loaded_pre=false
+    echo "loading $f"
+    for f; do
+      if [[ -f $f ]]; then
+        # Prevent loading base twice, initially and via glob
+        if $loaded_pre && [[ $f == */base ]]; then
+          continue
+        fi
 
-# interactive shell
-if [ "$PS1" ]; then
-  if [ $bmajor -eq 2 -a $bminor -ge 4 ] || [ $bmajor -ge 3 ]; then
-    if [ -f "${bc_path}/bash_completion" ]; then
-      source "${bc_path}/bash_completion"
-    fi
-    if [ -d ~/.bash_completion.d ] ; then
-      for file in ~/.bash_completion.d/* ; do
-        [ -f $file ] && . $file
-      done
-    fi
-  fi
+        # Some modules, including base, depend on the definitions
+        # in .pre.  See the ebuild for how this is created.
+        if ! $loaded_pre; then
+          if [[ ${BASH_COMPLETION-unset} == unset ]]; then
+            BASH_COMPLETION="/usr/share/bash-completion/base"
+          fi
+          source "/usr/share/bash-completion/.pre"
+          loaded_pre=true
+        fi
+
+        echo "sourcing ${f}"
+        source "$f"
+      fi
+    done
+
+    # Clean up
+    $loaded_pre && source "/usr/share/bash-completion/.post"
+    unset -f _load_completions  # not designed to be called more than once
+  }
+
+  _load_completions \
+    ~/.bash_completion.d/base \
+    ~/.bash_completion.d/* \
+    "${bc_path}/bash_completion"
 fi
-
-unset bash bmajor bminor bc_path
+unset bash bmajor bminor
