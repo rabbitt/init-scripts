@@ -3,7 +3,7 @@
 function readlink() {
   local _readlink="$(which readlink)"
 
-  if ${_readlink} --version . 2>&1 | grep -q GNU
+  if ${_readlink} --version . 2>&1 | grep -q GNU; then
     ${_readlink} -f "$@"
   else
     perl -e "use Cwd qw(abs_path); print abs_path(glob('$@'));"
