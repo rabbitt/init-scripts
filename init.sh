@@ -20,7 +20,8 @@ done
 source  ${root_path}/post-init
 
 
-# load user environment
+# load user environments from ~/.env.d, ~/.alias.d,
+# ~/.functions.d, ~/.3rdparty.d
 [ -f "${HOME}/.bash-pre-init" ] && source  "${HOME}/.bash-pre-init"
 for _mod in env alias functions 3rdparty; do
   [ ! -d "${HOME}/.${_mod}.d" ] && continue
