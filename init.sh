@@ -10,18 +10,25 @@ function readlink() {
 
 root_path="${HOME}/.init-scripts"
 
-# preinit
+# load base environment
 source  ${root_path}/pre-init
-
-# load environment
 for _mod in env alias functions 3rdparty; do
   for _file in "${root_path}/${_mod}.d"/*.${_mod}; do
-    # echo "loading: ${_file}"
     source "${_file}"
   done 2>/dev/null
 done
-
-# post-init
 source  ${root_path}/post-init
+
+
+# load user environment
+[ -f "${HOME}/.bash-pre-init" ] && source  "${HOME}/.bash-pre-init"
+for _mod in env alias functions 3rdparty; do
+  [ ! -d "${HOME}/.${_mod}.d" ] && continue
+
+  for _file in "${root_path}/${_mod}.d"/*.${_mod}; do
+    source "${_file}"
+  done 2>/dev/null
+done
+[ -f "${HOME}/.bash-post-init" ] && source  "${HOME}/.bash-post-init"
 
 unset root_paths _mod _file

@@ -3,7 +3,6 @@ bash=${BASH_VERSION%.*}; bmajor=${bash%.*}; bminor=${bash#*.}
 if [ $bmajor -gt 3 ] || [ $bmajor -eq 3 -a $bminor -ge 2 ]; then
   _load_completions() {
     declare f x loaded_pre=false
-    echo "loading $f"
     for f; do
       if [[ -f $f ]]; then
         # Prevent loading base twice, initially and via glob
@@ -21,7 +20,6 @@ if [ $bmajor -gt 3 ] || [ $bmajor -eq 3 -a $bminor -ge 2 ]; then
           loaded_pre=true
         fi
 
-        echo "sourcing ${f}"
         source "$f"
       fi
     done
