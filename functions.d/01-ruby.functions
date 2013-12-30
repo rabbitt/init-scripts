@@ -1,0 +1,5 @@
+function switch-ruby() {
+  ~/.init-scripts/bin/switch-ruby "$@"
+  hash -r
+}
+

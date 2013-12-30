@@ -1,0 +1,1 @@
+alias reload-initscripts='source ~/.init-scripts/init.sh'

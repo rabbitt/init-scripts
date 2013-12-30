@@ -1,2 +1,1 @@
 alias gem='sudo gem'
-alias switch-ruby="~/bin/switch-ruby; hash -r"
