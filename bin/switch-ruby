@@ -1,30 +1,92 @@
 #/usr/bin/env bash
 
-while getopts 'v' opt; do
+function _current_index() {
+  local index=
+  current_version=$(ruby -v | awk '{ print $2 }' |perl -pi -e 's/^(\d\.\d).+/\1/g')
+  for (( i = 1 ; i < ${#VERSIONS[@]}; i++ )); do
+    if [ "${current_version}" = "${VERSIONS[$i]}" ]; then
+      index=$i
+    fi
+  done
+
+  echo -n ${index:-0}
+}
+
+function _next_index() {
+  local index="$(_current_index)"
+  local next_index=$((index + 1))
+
+  if [ ${next_index} -ge ${#VERSIONS[@]} ]; then
+    next_index=0
+  fi
+  echo -n ${next_index}
+}
+
+function _switch_ruby_version() {
+  local version=${1:-next}
+
+  case "${version}" in
+    1.[89]|2.0)
+      for file in "${RUBY_FILES[@]}"; do
+        # echo sudo ln -snf /opt/local/bin/${file}${version} /opt/local/bin/${file/-}
+        sudo ln -snf /opt/local/bin/${file}${version} /opt/local/bin/${file/-}
+      done
+      ;;
+    system)
+      for file in "${RUBY_FILES[@]}"; do
+        [ -s /opt/local/bin/${file} ] && sudo rm -f /opt/local/bin/${file}
+      done
+      ;;
+    next)
+      local next_index=$(_next_index)
+
+      if [ -z "${next_index}" ]; then
+        echo "Couldn't determine next version to switch to - use explicit name"
+        exit 1
+      else
+        echo "Switching version to ${VERSIONS[${next_index}]}"
+        _switch_ruby_version "${VERSIONS[${next_index}]}"
+      fi
+      ;;
+    *) echo "Unknown version: ${version}"; exit 1;;
+  esac
+}
+
+
+RUBY_FILES=(erb gem- irb rake rdoc ri ruby testrb)
+VERSIONS=(system)
+
+for ver in 1.8 1.9 2.0; do
+  [ -f /opt/local/bin/ruby${ver} ] && VERSIONS[${#VERSIONS[@]}]="${ver}"
+done
+
+
+while getopts ':vV:' opt; do
   case "${opt}" in
-    v) ruby -v; exit;;
+    v)
+      echo "Installed Versions: ${VERSIONS[@]}"
+      echo "Current Version: $(ruby -v | awk '{ print $2 }')"
+      exit
+      ;;
+    V)
+      case "${OPTARG}" in
+        os) use_version=system;;
+        18) use_version=1.8;;
+        19) use_version=1.9;;
+        20) use_version=2.0;;
+         *) echo "Version ${OPTARG} not found."; exit 1;;
+      esac
+      ;;
   esac
 done
 
-if [ -s /opt/local/bin/ruby ]; then
-  use_system=1 # switch to using system
-else
-  use_system=0 # switch to using macports ruby
-fi
+_switch_ruby_version ${use_version:-next}
 
-for file in /opt/local/bin/*1.9; do
-  if [ $use_system -eq 0 ]; then
-    [ ! -L ${file/1.9} ] && sudo ln -snf ${file} ${file/1.9}
-  else
-    [ -L ${file/1.9} ] && sudo rm -f ${file/1.9}
-  fi
+for prog in ${RUBY_FILES[@]}; do
+  hash -d "${prog}" &>-
+  type "${prog}" &>-
 done
 
-hash -d ruby &>-
-type ruby &>-
+echo "Now using Ruby Version: $(ruby -v | awk '{ print $2 }')"
 
-if [ $(ruby -v | awk '{ print $2 }') = "1.8.7" ]; then
-  echo "Now using System Ruby (1.8.7)"
-else
-  echo "Now using Macports Ruby (1.9.3)"
-fi
+
