@@ -1,3 +1,20 @@
+function have_path() {
+  [ $# -ne 1 ] && return
+  echo "${PATH}" | grep -qP "(?:^|:)($1)(?::|$)"
+}
+
+function push_path() {
+  have_path "$1" && return
+  export PATH="${PATH}:$1"
+}
+alias append_path=push_path
+
+function shift_path() {
+  have_path "$1" && return
+  export PATH="$1:${PATH}"
+}
+alias prepend_path=shift_path
+
 function readlink() {
   local _readlink="$(which readlink)"
 
