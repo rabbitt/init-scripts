@@ -62,6 +62,18 @@ setup_color_functions
 function default_color() { color norm; }
 function normal_color() { color norm; }
 
+export COLOR_DEFAULT="$(default_color)"
+export COLOR_NORMAL="$(normal_color)"
+
+for _color in BLACK RED GREEN YELLOW BLUE MAGENTA CYAN WHITE; do
+  for shade in LIGHT BRIGHT DARK ""; do
+    const_name=$(echo "${blink}_${shade}_${_color}" | sed -r -e 's/^_+//g' -e 's/_{2,}/_/g')
+    code="export COLOR_${const_name}="'"'"\$(color $(echo $const_name | tr '[A-Z]' '[a-z]'))"'"'
+    eval "${code}"
+    done
+done
+
+
 function colorchart() {
   local _color=
 

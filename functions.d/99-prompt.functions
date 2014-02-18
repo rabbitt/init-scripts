@@ -2,6 +2,8 @@
 [[ "${PROMPT_COMMAND}" != *set_last_exitcode* ]] && export PROMPT_COMMAND="set_last_exitcode;${PROMPT_COMMAND}"
 
 function jobcount() {
+  [ -z "${PROMPT_IGNORE_JOBCOUNT}" ] || return
+
   local count=$(jobs | wc -l)
   if [ ${count} -ge 1 ]; then
     echo -en "$(white)-[$(cyan)jobs:$(bright_red)${count}$(white)]-"
@@ -10,11 +12,47 @@ function jobcount() {
   fi
 }
 
-function current_git_branch() {
-  local branch_name="$(git for-each-ref --format='%(refname:short)' $(git symbolic-ref HEAD 2>/dev/null) 2>/dev/null | head -n1)"
-  if [ ! -z "${branch_name}" ]; then
-    echo -en "$(white)-[$(cyan)branch:$(bright_red)${branch_name}$(white)]-"
+function is_git_repository { git branch &>/dev/null; }
+
+function print_git_branch {
+  git_status="$(git status 2>/dev/null)"
+
+  # Set color based on clean/staged/dirty.
+  if [[ ${git_status} =~ "working directory clean" ]]; then
+    state="${COLOR_BRIGHT_GREEN}"
+  elif [[ ${git_status} =~ "Changes to be committed" ]]; then
+    state="${COLOR_YELLOW}"
+  else
+    state="${COLOR_BRIGHT_RED}"
   fi
+
+  # Set arrow icon based on status against remote.
+  remote_pattern="# Your branch is (.*) of"
+  if [[ ${git_status} =~ ${remote_pattern} ]]; then
+    if [[ ${BASH_REMATCH[1]} == "ahead" ]]; then
+      remote="↑"
+    else
+      remote="↓"
+    fi
+  fi
+
+  diverge_pattern="# Your branch and (.*) have diverged"
+  if [[ ${git_status} =~ ${diverge_pattern} ]]; then
+    remote="↕"
+  fi
+
+  branch=$(
+    git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | \
+      awk "/^$(git rev-parse HEAD)/ {print \$2}"
+  )
+
+  # Set the final branch string.
+  echo -en "$(white)-[$(cyan)branch:${state}${branch}$(white)$(yellow)${remote}$(white)]-"
+}
+
+function current_git_branch() {
+  [ -z "${PROMPT_IGNORE_GIT}" ] || return
+  is_git_repository && print_git_branch
 }
 
 function load_color() {
@@ -29,11 +67,13 @@ function load_color() {
 }
 
 function load() {
+  [ -z "${PROMPT_IGNORE_LOAD}" ] || return
   read five ten fifteen <<< $(uptime | perl -pi -e 's|^.*load averages?: ||g' | tr -d ',')
   echo -en "$(white)-[$(cyan)load:$(load_color ${five}) $(load_color ${ten}) $(load_color ${fifteen})$(white)]-"
 }
 
 function lec() {
+  [ -z "${PROMPT_IGNORE_LEC}" ] || return
   local status=${LEC}
   status=${status:=0}
   if [ $status -ge 1 ]; then
@@ -48,6 +88,7 @@ function lec() {
 function set_last_exitcode() { export LEC=$?; }
 
 function rubyversion() {
+  [ -z "${PROMPT_IGNORE_RUBY}" ] || return
   hash -d ruby &>/dev/null
   type ruby &>/dev/null
 
