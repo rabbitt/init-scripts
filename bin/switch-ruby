@@ -28,7 +28,6 @@ function _switch_ruby_version() {
   case "${version}" in
     1.[89]|2.0)
       for file in "${RUBY_FILES[@]}"; do
-        # echo sudo ln -snf /opt/local/bin/${file}${version} /opt/local/bin/${file/-}
         sudo ln -snf /opt/local/bin/${file}${version} /opt/local/bin/${file/-}
       done
       ;;
