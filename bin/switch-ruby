@@ -1,8 +1,37 @@
 #/usr/bin/env bash
 
+function _ruby_binary_path() {
+  readlink -f $(which ruby)
+}
+
+function _ruby_binary_version_tag() {
+  local current_version=unknown
+
+  case "$(_ruby_binary_path)" in
+    /System/*)
+      current_version=system
+      ;;
+    /opt/local/bin/ruby*)
+      current_version=${real_file##*/}
+      current_version=${current_version/ruby/}
+      ;;
+  esac
+
+  echo -en ${current_version}
+}
+
+function _ruby_binary_type() {
+  local type=unknown
+  case "$(_ruby_binary_path)" in
+    /System/*) type=system ;;
+    /opt/local/bin/ruby*) type=ports ;;
+  esac
+  echo -en ${type}
+}
+
 function _current_index() {
-  local index=
-  current_version=$(ruby -v | awk '{ print $2 }' |perl -pi -e 's/^(\d\.\d).+/\1/g')
+  local index= current_version=$(_ruby_binary_version_tag)
+
   for (( i = 1 ; i < ${#VERSIONS[@]}; i++ )); do
     if [ "${current_version}" = "${VERSIONS[$i]}" ]; then
       index=$i
@@ -26,7 +55,7 @@ function _switch_ruby_version() {
   local version=${1:-next}
 
   case "${version}" in
-    1.[89]|2.0)
+    1.[89]|2.[012])
       for file in "${RUBY_FILES[@]}"; do
         sudo ln -snf /opt/local/bin/${file}${version} /opt/local/bin/${file/-}
       done
@@ -51,25 +80,27 @@ function _switch_ruby_version() {
   esac
 }
 
+function current_version() {
+  echo -en "$(ruby -v | awk '{ print $2 }') ($(_ruby_binary_type))"
+}
 
-RUBY_FILES=(erb gem- irb rake rdoc ri ruby testrb)
+RUBY_FILES=(erb gem irb rake rdoc ri ruby testrb)
 VERSIONS=(system)
 
-for ver in 1.8 1.9 2.0; do
-  [ -f /opt/local/bin/ruby${ver} ] && VERSIONS[${#VERSIONS[@]}]="${ver}"
+for version in $(ls --color=no /opt/local/bin/ruby* |xargs -i basename {} | sed -e 's/ruby//g'); do
+  VERSIONS+=(${version})
 done
-
 
 while getopts ':vV:' opt; do
   case "${opt}" in
     v)
       echo "Installed Versions: ${VERSIONS[@]}"
-      echo "Current Version: $(ruby -v | awk '{ print $2 }')"
+      echo "Current Version: $(current_version)"
       exit
       ;;
     V)
       case "${OPTARG}" in
-        os) use_version=system;;
+        os|system) use_version=system;;
         18) use_version=1.8;;
         19) use_version=1.9;;
         20) use_version=2.0;;
@@ -79,13 +110,11 @@ while getopts ':vV:' opt; do
   esac
 done
 
-_switch_ruby_version ${use_version:-next}
+_switch_ruby_version ${use_version:-$1}
 
 for prog in ${RUBY_FILES[@]}; do
   hash -d "${prog}" &>-
   type "${prog}" &>-
 done
 
-echo "Now using Ruby Version: $(ruby -v | awk '{ print $2 }')"
-
-
+echo "Now using Ruby Version: $(current_version)"
