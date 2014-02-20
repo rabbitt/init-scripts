@@ -124,7 +124,7 @@ function main_line() {
 }
 
 function path_line() {
-  echo -en "$(white)-[$(cyan)$(pwd)$(white)]-"
+  echo -en "$(white)-[$(cyan)${PWD/${HOME}/~}$(white)]-"
 }
 
 function prompt_lines() {
