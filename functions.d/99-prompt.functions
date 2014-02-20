@@ -96,21 +96,41 @@ function rubyversion() {
   echo -en "$(white)-[$(cyan)rv:$(brightgreen ${ver})$(white)]-"
 }
 
-function prompt() {
+function extras_line() {
+  local extras=( "$(jobcount)" "$(lec)" "$(load)" "$(rubyversion)" "$(current_git_branch)" )
+  for ((i = 0; i < ${#extras[@]}; i++)); do
+    [ ! -z "${extras[$i]}" ] && echo -en "${extras[$i]} "
+  done
+}
+
+function main_line() {
   local TTY=$(tty | perl -pi -e 's|/dev/||g')
   local host="$(hostname -f)"
+  local user_host=
 
   if [ "$(whoami)" = 'root' ]; then
     local USERNAME="$(whoami | awk '{ print(toupper($1)) }')"
     host="$(echo ${host} | awk '{ print(toupper($1)) }')"
-    PS1="\n${TITLEBAR}$(white)-[$(brightred)${USERNAME}$(yellow)@$(bright_blue)${host}$(white)]- "
+    user_host="\n${TITLEBAR}$(white)-[$(brightred)${USER}$(yellow)@$(bright_blue)${host}$(white)]- "
   else
-    PS1="\n${TITLEBAR}$(white)-[$(yellow)\u$(white)@$(bright_blue)${host}$(white)]- "
+    user_host="\n${TITLEBAR}$(white)-[$(yellow)${USER}$(white)@$(bright_blue)${host}$(white)]- "
   fi
 
-  PS1="${PS1}-[$(brightblue)\d - \A$(white)]- -[$(brightblack)${TTY}$(white)]-\n\$(jobcount) \$(lec) \$(load) \$(rubyversion) \$(current_git_branch)\n"
-  PS1="${PS1}$(white)-[$(cyan)\w$(white)]-\n"
-  PS1="${PS1}\[$(yellow)\]\$\[$(normal_color)\] "
-  PS2="$(brightcyan)-$(cyan)-$(brightblack)-$(normal_color) "
-  export PS1 PS2
+  echo -en "${user_host}-[$(brightblue)$(date)$(white)]- -[$(brightblack)${TTY}$(white)]-"
+}
+
+function path_line() {
+  echo -en "$(white)-[$(cyan)$(pwd)$(white)]-"
+}
+
+function prompt_lines() {
+  [ -z "${PROMPT_IGNORE_MAIN}" ]   && echo -e "$(main_line)"
+  [ -z "${PROMPT_IGNORE_EXTRAS}" ] && echo -e "$(extras_line)"
+  [ -z "${PROMPT_IGNORE_PATH}" ]   && echo -e "$(path_line)"
+}
+
+function prompt() {
+  export PS1="\$(prompt_lines)"
+  export PS1="${PS1}\n\[$(yellow)\]\$\[$(normal_color)\] "
+  export PS2="$(brightcyan)-$(cyan)-$(brightblack)-$(normal_color) "
 }
