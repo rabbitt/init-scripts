@@ -15,7 +15,8 @@ function jobcount() {
 function is_git_repository { git branch &>/dev/null; }
 
 function print_git_branch {
-  git_status="$(git status 2>/dev/null)"
+  local git_status="$(git status 2>/dev/null)"
+  local state= remote_pattern= remote= diverge_pattern= branch=
 
   # Set color based on clean/staged/dirty.
   if [[ ${git_status} =~ "working directory clean" ]]; then
@@ -56,7 +57,7 @@ function current_git_branch() {
 }
 
 function load_color() {
-  num="$@"
+  local num="$@"
   if [ $(echo "scale=10; ${num} / ${CORES} >= 1.5" | bc) -eq 1 ]; then
     brightred ${num}
   elif [ $(echo "scale=10; ${num} / ${CORES} >= 0.8" | bc) -eq 1 ]; then
@@ -68,6 +69,7 @@ function load_color() {
 
 function load() {
   [ -z "${PROMPT_IGNORE_LOAD}" ] || return
+  local five= ten= fifteen=
   read five ten fifteen <<< $(uptime | perl -pi -e 's|^.*load averages?: ||g' | tr -d ',')
   echo -en "$(white)-[$(cyan)load:$(load_color ${five}) $(load_color ${ten}) $(load_color ${fifteen})$(white)]-"
 }
@@ -92,6 +94,7 @@ function rubyversion() {
   hash -d ruby &>/dev/null
   type ruby &>/dev/null
 
+  local prog= ver= other=
   read prog ver other <<< $(ruby -v)
   echo -en "$(white)-[$(cyan)rv:$(brightgreen ${ver})$(white)]-"
 }
@@ -105,12 +108,13 @@ function extras_line() {
 
 function main_line() {
   local TTY=$(tty | perl -pi -e 's|/dev/||g')
+  local user="$(whoami)"
   local host="$(hostname -f)"
   local user_host=
 
   if [ "$(whoami)" = 'root' ]; then
-    local USERNAME="$(whoami | awk '{ print(toupper($1)) }')"
-    host="$(echo ${host} | awk '{ print(toupper($1)) }')"
+    user="$(toupper ${user})"
+    host="$(toupper ${host})"
     user_host="\n${TITLEBAR}$(white)-[$(brightred)${USER}$(yellow)@$(bright_blue)${host}$(white)]- "
   else
     user_host="\n${TITLEBAR}$(white)-[$(yellow)${USER}$(white)@$(bright_blue)${host}$(white)]- "

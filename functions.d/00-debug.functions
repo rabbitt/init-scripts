@@ -1,0 +1,22 @@
+function execution_verbosity() {
+  if [[ "$1" == "off" || $- = *x* ]]; then
+    set +x
+  elif [[ "$1" == "on"  || $- != *x* ]]; then
+    set -x
+  fi
+}
+
+function verbosity() {
+  if [[ "$1" == "off" || $- = *v* ]]; then
+    set +v
+  elif [[ "$1" == "on"  || $- != *v* ]]; then
+    set -v
+  fi
+}
+
+function show_exec() {
+  execution_verbosity on
+  eval "$@"
+  execution_verbosity off
+}
+

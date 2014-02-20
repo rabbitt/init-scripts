@@ -1,0 +1,32 @@
+function toupper() {
+  local text="$*"
+  if [[ $BASH_VERSION = 4* ]]; then
+    echo -n "${text^^}"
+  else
+    echo -n "${text}" | tr '[a-z]' '[A-Z]'
+  fi
+}
+
+function tolower() {
+  local text="$*"
+  if [[ $BASH_VERSION = 4* ]]; then
+    echo -n "${text,,}"
+  else
+    echo -n "${text}" | tr '[A-Z]' '[a-z]'
+  fi
+}
+
+function capitalize() {
+  local i= args=("$@") words=()
+
+  for ((i = 0; i < $#; i++)); do
+    local word=${args[$i]}
+    if [[ $BASH_VERSION = 4* ]]; then
+      words+=("${word^}")
+    else
+      words+=("$(toupper ${word:0:1})${word:1}")
+    fi
+  done
+
+  echo -n "${words[*]}"
+}
