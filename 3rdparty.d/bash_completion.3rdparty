@@ -1,8 +1,15 @@
+
+[ -z "$BASH_VERSION" -o -z "$PS1" -o -n "$BASH_COMPLETION" ] && return
+
 bc_path="$(dirname $(readlink ${BASH_SOURCE[0]}))"
-bash=${BASH_VERSION%.*}; bmajor=${bash%.*}; bminor=${bash#*.}
+bash=${BASH_VERSION%.*}
+bmajor=${bash%.*}
+bminor=${bash#*.}
+
 if [ $bmajor -gt 3 ] || [ $bmajor -eq 3 -a $bminor -ge 2 ]; then
   _load_completions() {
-    declare f x loaded_pre=false
+    local f= x= loaded_pre=false
+
     for f; do
       if [[ -f $f ]]; then
         # Prevent loading base twice, initially and via glob
@@ -14,9 +21,9 @@ if [ $bmajor -gt 3 ] || [ $bmajor -eq 3 -a $bminor -ge 2 ]; then
         # in .pre.  See the ebuild for how this is created.
         if ! $loaded_pre; then
           if [[ ${BASH_COMPLETION-unset} == unset ]]; then
-            BASH_COMPLETION="/usr/share/bash-completion/base"
+            BASH_COMPLETION="${bc_path}/bash_completion.d/base"
           fi
-          source "/usr/share/bash-completion/.pre"
+          source "${bc_path}/bash_completion.d/.pre"
           loaded_pre=true
         fi
 
@@ -25,13 +32,13 @@ if [ $bmajor -gt 3 ] || [ $bmajor -eq 3 -a $bminor -ge 2 ]; then
     done
 
     # Clean up
-    $loaded_pre && source "/usr/share/bash-completion/.post"
+    $loaded_pre && source "${bc_path}/bash_completion.d/.post"
     unset -f _load_completions  # not designed to be called more than once
   }
 
   _load_completions \
-    ~/.bash_completion.d/base \
-    ~/.bash_completion.d/* \
+    ${bc_path}/.bash_completion.d/base \
+    ${bc_path}/.bash_completion.d/* \
     "${bc_path}/bash_completion"
 fi
 unset bash bmajor bminor

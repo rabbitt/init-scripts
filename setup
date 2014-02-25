@@ -23,7 +23,9 @@ function setup() {
   local pre_init="${initscripts}/pre-init"
   local post_init="${initscripts}/post-init"
 
-  source ${funcpath}/00-color.functions
+  source ${funcpath}/00-debug.functions
+  source ${funcpath}/05-string.functions
+  source ${funcpath}/10-color.functions
 
   if [ ! -d ${fq_initscript_path} ]; then
     if [ ! -s ${fq_initscript_path} ]; then
