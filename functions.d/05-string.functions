@@ -3,7 +3,7 @@ function toupper() {
   if [[ $BASH_VERSION = 4* ]]; then
     echo -n "${text^^}"
   else
-    echo -n "${text}" | tr '[a-z]' '[A-Z]'
+    echo -n "${text}" | tr '[:lower:]' '[:upper:]'
   fi
 }
 
@@ -12,12 +12,12 @@ function tolower() {
   if [[ $BASH_VERSION = 4* ]]; then
     echo -n "${text,,}"
   else
-    echo -n "${text}" | tr '[A-Z]' '[a-z]'
+    echo -n "${text}" | tr '[:upper:]' '[:lower:]'
   fi
 }
 
 function capitalize() {
-  local i= args=("$@") words=()
+  local i='' args=("$@") words=()
 
   for ((i = 0; i < $#; i++)); do
     local word=${args[$i]}
