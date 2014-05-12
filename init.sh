@@ -15,12 +15,13 @@ source  ${root_path}/post-init
 # ~/.functions.d, ~/.3rdparty.d
 [ -f "${HOME}/.bash-pre-init" ] && source  "${HOME}/.bash-pre-init"
 for _mod in env alias functions 3rdparty; do
-  [ ! -d "${HOME}/.${_mod}.d" ] && continue
+  _user_path="${HOME}/.${_mod}.d"
+  [ ! -d "${_user_path}" ] && continue
 
-  for _file in "${root_path}/${_mod}.d"/*.${_mod}; do
+  for _file in "${_user_path}"/*.${_mod}; do
     source "${_file}"
-  done 2>/dev/null
+  done
 done
 [ -f "${HOME}/.bash-post-init" ] && source  "${HOME}/.bash-post-init"
 
-unset root_paths _mod _file
+unset root_paths _mod _file _user_path
