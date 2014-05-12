@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+function trim() {
+  read -rd '' $1 <<< "${!1}"
+}
+
+function _get_var() {
+  [ $# -ne 1 ] && return || echo -n "${!1}"
+}
+
+function _set_var() {
+  [ $# -ne 2 ] && return || read -r $1 <<< "$2"
+}
+
+function _includes_path() {
+  [ $# -ne 2 ] && return
+  _get_var "$1" | tr ':' '\n' | grep -qP "^($2)$"
+}
+
+function pathvar_push_path() {
+  [ $# -ne 2 ] && return
+  _includes_path "$1" "$2" && return
+  [ -z "${!1}" ] && _set_var $1 $2 || _set_var $1 "${!1}:${2}"
+}
+
+function pathvar_shift_path() {
+  [ $# -ne 2 ] && return
+  _includes_path "$1" "$2" && return
+  [ -z "${!1}" ] && _set_var $1 $2 || _set_var $1 "${2}:${!1}"
+}
+
+function pathvar_remove_path() {
+  [ $# -ne 2 ] && return
+  local new_list="$(_get_var $1 | sed -re 's/:/\n:/g' | sed -re "\%^:?${2}$%d" | tr -d '\n' | sed -re 's/(^:|:$)//g')"
+  trim new_list
+  eval "export ${1}='${new_list}'"
+}
+
+function pathvar_push_if_exists() {
+  [ $# -ne 2 ] && return
+  [ -d "$2" ] && pathvar_push_path "$@"
+}
+
+function pathvar_shift_if_exists() {
+  [ $# -ne 2 ] && return
+  [ -d "$2" ] && pathvar_shift_path "$@"
+}
+
+function push_path() {
+  pathvar_push_if_exists PATH "$@"
+}
+alias append_path=push_path
+
+function shift_path() {
+  pathvar_shift_if_exists PATH "$@"
+}
+alias prepend_path=shift_path
+
+function readlink() {
+  local _readlink="$(which readlink)"
+
+  if ${_readlink} --version . 2>&1 | grep -q GNU; then
+    ${_readlink} -f "$@"
+  else
+    perl -e "use Cwd qw(abs_path); print abs_path(glob('$@'));"
+  fi
+}

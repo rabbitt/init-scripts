@@ -1,31 +1,5 @@
-function have_path() {
-  [ $# -ne 1 ] && return
-  echo "${PATH}" | grep -qP "(?:^|:)($1)(?::|$)"
-}
-
-function push_path() {
-  have_path "$1" && return
-  export PATH="${PATH}:$1"
-}
-alias append_path=push_path
-
-function shift_path() {
-  have_path "$1" && return
-  export PATH="$1:${PATH}"
-}
-alias prepend_path=shift_path
-
-function readlink() {
-  local _readlink="$(which readlink)"
-
-  if ${_readlink} --version . 2>&1 | grep -q GNU; then
-    ${_readlink} -f "$@"
-  else
-    perl -e "use Cwd qw(abs_path); print abs_path(glob('$@'));"
-  fi
-}
-
 root_path="${HOME}/.init-scripts"
+source "${root_path}/lib/path.functions"
 
 # load base environment
 source  ${root_path}/pre-init
