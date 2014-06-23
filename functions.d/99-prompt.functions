@@ -42,12 +42,14 @@ function print_git_branch {
     remote="↕"
   fi
 
-  branch=$( git symbolic-ref --short HEAD )
-
-  [[ "${branch}" =~ "fatal:" ]] && branch=unknown
-
-  # Set the final branch string.
-  echo -en "$(white)-[$(cyan)branch:${state}${branch}$(white)$(yellow)${remote}$(white)]-"
+  branch=$( git symbolic-ref --short HEAD 2>&1 )
+  if [[ "${branch}" =~ "fatal:" ]]; then
+    detached="$(git rev-parse --short=16 HEAD)"
+    echo -en "$(white)-[$(cyan)detached:${state}${detached}$(white)$(yellow)${remote}$(white)]-"
+  else
+    # Set the final branch string.
+    echo -en "$(white)-[$(cyan)branch:${state}${branch}$(white)$(yellow)${remote}$(white)]-"
+  fi
 }
 
 function current_git_branch() {
