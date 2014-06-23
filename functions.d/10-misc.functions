@@ -1,3 +1,14 @@
+function ask() {
+  local prompt="$*" response=
+  prompt="${prompt:-continue?}"
+
+  until [[ ${response} =~ [yn] ]]; do
+    read -p "${prompt} [y/n] " response
+  done
+
+  [[ ${response} =~ n ]] && return 1 || return 0
+}
+
 function commafy() {
   for arg in ${@}; do
     echo ${arg} | perl -pi -e 's/(\d)(?=(\d{3})+(\D|$))/$1\,/g'
