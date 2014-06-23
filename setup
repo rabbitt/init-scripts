@@ -17,7 +17,7 @@ function install_dependencies() {
                  readline rsync curl slocate netcat tree watch wget psutils \
                  pstree pcre pinfo p7zip openssh openssl ncurses nano \
                  libxml2 libxslt libyaml libssh2 libffi keychain gzip gpgme \
-                 gnutar figlet dialog dnstracer bzip2 bash augeas 
+                 gnutar figlet dialog dnstracer bzip2 bash augeas hub
   set +v
 }
 
