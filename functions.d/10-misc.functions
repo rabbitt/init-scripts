@@ -74,3 +74,35 @@ function generate_password() {
   lightcyan "${password}\n"
 }
 
+
+function get_file_from_url() {
+  if [ $# -lt 1 -o $# -gt 2 ]; then
+    echo "Usage: get_file_from_url url [filename]"
+    echo
+    echo "       url      - (required) url to retrieve"
+    echo "       filename - (optional) optional filename to store url as"
+    echo
+    echo "If file is not specified, name will be drawn from the url itself."
+    return 1
+  fi
+ 
+  local url="$1" file="$2"
+  
+  if [ -z "${file}" ]; then
+    file="${url%\?*}"
+    file="${file##*/}"
+  fi
+
+  if [ -e "${file}" ]; then
+    counter=1
+    until [ ! -e "${file}.${counter}" ]; do
+      counter=$((counter + 1))
+    done
+    file="${file}.${counter}"
+  fi
+
+  echo "Storing ${url} as ${file}"
+  echo curl -s "$url" > ${file}
+  curl -s "$url" > ${file}
+}
+
