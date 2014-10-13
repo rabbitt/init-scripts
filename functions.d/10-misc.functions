@@ -9,6 +9,38 @@ function ask() {
   [[ ${response} =~ n ]] && return 1 || return 0
 }
 
+function revwords() {
+  if [ -t 0 ]; then
+    [ $# -eq 0 ] && return
+
+    words=( $@ )
+
+    for (( i = ${#words[@]} - 1; i >= 0; i--)) {
+      echo -n ${words[$i]}
+      [ $i -gt 0 ] && echo -n ' '
+    }
+    echo
+  else
+    while read -r line; do
+      words=( ${line} )
+      for (( i = ${#words[@]} - 1; i >= 0; i--)) {
+        echo -n ${words[$i]}
+        [ $i -gt 0 ] && echo -n ' '
+      }
+      echo
+    done
+  fi
+}
+
+function sort_domains() {
+  if [ -t 0 ]; then
+    [ $# -eq 0 ] && return
+    echo $@ | tr ' ' '\n' | tr '.' ' ' | revwords | sort | revwords | tr ' ' '.' | tr '\n' ' '
+  else 
+    cat | tr '.' ' ' | revwords | sort | revwords | tr ' ' '.'
+  fi
+}
+
 function commafy() {
   for arg in ${@}; do
     echo ${arg} | perl -pi -e 's/(\d)(?=(\d{3})+(\D|$))/$1\,/g'
