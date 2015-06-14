@@ -13,7 +13,7 @@ function readlink() {
 function install_dependencies() {
   echo "Installing port dependencies. Please enter sudo password when asked."
   set -ev
-  sudo port -qnc install findutils coreutils gsed gawk grep htop git-core \
+  sudo port -qnc install findutils coreutils gsed gawk grep htop git \
                  readline rsync curl slocate netcat tree watch wget psutils \
                  pstree pcre pinfo p7zip openssh openssl ncurses nano \
                  libxml2 libxslt libyaml libssh2 libffi keychain gzip gpgme \
