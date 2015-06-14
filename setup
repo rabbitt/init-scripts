@@ -30,6 +30,7 @@ function check_dependencies() {
     read major minor patch <<< "$(sw_vers -productVersion | tr '.' ' ')"
 
     case $minor in 
+     10) link="https://distfiles.macports.org/MacPorts/MacPorts-2.3.3-10.10-Yosemite.pkg";;
       9) link="https://distfiles.macports.org/MacPorts/MacPorts-2.2.1-10.9-Mavericks.pkg";;
       8) link="https://distfiles.macports.org/MacPorts/MacPorts-2.2.1-10.8-MountainLion.pkg";;
       7) link="https://distfiles.macports.org/MacPorts/MacPorts-2.2.1-10.7-Lion.pkg";;

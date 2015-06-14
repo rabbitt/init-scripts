@@ -72,7 +72,7 @@ function load_color() {
 function load() {
   [ -z "${PROMPT_IGNORE_LOAD}" ] || return
   local five= ten= fifteen=
-  read five ten fifteen <<< $(uptime | perl -pi -e 's|^.*load averages?: ||g' | tr -d ',')
+  read five ten fifteen <<< $(uptime | perl -p -e 's|^.*load averages?: ||g' | tr -d ',')
   echo -en "$(white)-[$(cyan)load:$(load_color ${five}) $(load_color ${ten}) $(load_color ${fifteen})$(white)]-"
 }
 
@@ -109,7 +109,7 @@ function extras_line() {
 }
 
 function main_line() {
-  local TTY=$(tty | perl -pi -e 's|/dev/||g')
+  local TTY=$(tty | perl -p -e 's|/dev/||g')
   local user="$(whoami)"
   local host="$(hostname -f)"
   local user_host=

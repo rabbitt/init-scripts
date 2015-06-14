@@ -1,0 +1,21 @@
+function local_domain() {
+  ifconfig ppp0 1>&- 2>&- && echo ${WORK_DOMAIN} || echo ${HOME_DOMAIN}
+}
+
+function nameservers {
+  awk '/^nameserver/ { print $2 }' /etc/resolv.conf
+}
+
+function valid_host? {
+  [ $# -ne 1 ] && return 1
+
+  local result=1 host=$1 output=''
+  for ns in $(nameservers); do
+    output=$($(which dig) @${ns} +tries=1 +time=1 +noall +answer +fail +nosearch +nonssearch ${host})
+    result=$?
+    [[ ${result} -eq 0 && ! -z "${output}" ]] && break
+  done
+
+  return ${result}
+}
+

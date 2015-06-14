@@ -1,5 +1,18 @@
 alias dns='nslookup -sil'
-alias flushdns='sudo killall -HUP mDNSResponder'
 alias dig-simple='dig +noall +answer'
 alias dig='dig-simple +stats'
 alias dig-auth='dig-simple +authority'
+
+case "${OSX_VERSION}" in
+  10.10*) alias flushdns="sudo bash -c 'discoveryutil udnsflushcaches; discoveryutil mdnsflushcache; echo flushed.'";;
+  10.9*) alias flushdns="sudo killall -HUP mDNSResponder";;
+  10.8*) alias flushdns="dscacheutil -flushcache";;
+esac
+
+function reload-resolver() {
+  sudo bash -c '
+    launchctl unload -w /System/Library/LaunchDaemons/com.apple.discoveryd.plist
+    launchctl load -w /System/Library/LaunchDaemons/com.apple.discoveryd.plist
+  '
+}
+

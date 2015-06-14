@@ -36,7 +36,7 @@ function color() {
   esac
 
   if [ $blinking -eq 1 ]; then
-    echo -en "033[${light};5;${color}m"
+    echo -en "\033[${light};5;${color}m"
   else
     echo -en "\033[${light};${color}m"
   fi
