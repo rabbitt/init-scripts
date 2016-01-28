@@ -1,0 +1,2 @@
+alias itcl="rlwrap tclsh"
+alias tclsh="rlwrap $(which tclsh)"

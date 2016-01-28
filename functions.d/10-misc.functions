@@ -84,8 +84,8 @@ function load_public_key_agent() {
   if [ ! -S ${SSH_AUTH_SOCK} ] || ! ps ${SSH_AGENT_PID} >&-; then
     [ ! -S "${SSH_AUTH_SOCK}" ] && echo "auth sock file [${SSH_AUTH_SOCK}] not found, or not a socket - regenerating"
     ! ps ${SSH_AGENT_PID} >&- && echo "SSH agent process [${SSH_AGENT_PID}] not alive - regenerating"
-    eval $(keychain --eval --agents ssh --inherit any --host keydata $(get_ssh_key_files))
   fi
+  eval $(keychain --eval --agents ssh --inherit any --host keydata $(get_ssh_key_files))
 }
 
 function generate_password() {

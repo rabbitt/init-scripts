@@ -4,7 +4,7 @@ alias dig='dig-simple +stats'
 alias dig-auth='dig-simple +authority'
 
 case "${OSX_VERSION}" in
-  10.10*) alias flushdns="sudo bash -c 'discoveryutil udnsflushcaches; discoveryutil mdnsflushcache; echo flushed.'";;
+  10.10*) alias flushdns="sudo bash -c 'dscacheutil -flushcache; sudo killall -HUP mDNSResponder'";;
   10.9*) alias flushdns="sudo killall -HUP mDNSResponder";;
   10.8*) alias flushdns="dscacheutil -flushcache";;
 esac

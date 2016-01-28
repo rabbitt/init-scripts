@@ -3,7 +3,8 @@
 
 function jobcount() {
   [ -z "${PROMPT_IGNORE_JOBCOUNT}" ] || return
-
+  # clear any finished job notifications before we get a count
+  jobs >/dev/null 
   local count=$(jobs | wc -l)
   if [ ${count} -ge 1 ]; then
     echo -en "$(white)-[$(cyan)jobs:$(bright_red)${count}$(white)]-"
