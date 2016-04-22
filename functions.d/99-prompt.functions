@@ -1,5 +1,13 @@
-[[ -z "${CORES}" ]] && export CORES=$(if [ $(uname -s) = Linux ]; then grep -c ^processor /proc/cpuinfo; elif [ $(uname -s) = Darwin ]; then sysctl -n hw.ncpu; else 1; fi)
-[[ "${PROMPT_COMMAND}" != *set_last_exitcode* ]] && export PROMPT_COMMAND="set_last_exitcode;${PROMPT_COMMAND}"
+if [[ -z ${CORES} ]]; then
+  case "$(uname -s)" in
+     Linux) CORES=$(grep -c ^processor /proc/cpuinfo) ;;
+    Darwin) CORES=$(sysctl -n hw.ncpu) ;;
+         *) CORES=1 ;;
+  esac
+  export CORES
+fi
+
+prepend_prompt_command set_last_exitcode 
 
 function jobcount() {
   [ -z "${PROMPT_IGNORE_JOBCOUNT}" ] || return
@@ -127,7 +135,7 @@ function main_line() {
 }
 
 function path_line() {
-  echo -en "$(white)-[$(cyan)${PWD/${HOME}/~}$(white)]-"
+  printf "$(white)-[$(cyan)%s$(white)]-" ${PWD/${HOME}/\~}
 }
 
 function prompt_lines() {

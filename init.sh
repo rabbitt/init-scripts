@@ -1,5 +1,8 @@
+[[ ! -z ${SKIP_INIT} ]] && return
+
 root_path="${HOME}/.init-scripts"
 source "${root_path}/lib/path.functions"
+source "${root_path}/lib/prompt.functions"
 
 # load base environment
 source  ${root_path}/pre-init

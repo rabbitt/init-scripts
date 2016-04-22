@@ -1,0 +1,1 @@
+alias export-tmux-buffer='tmux save-buffer - | pbcopy'

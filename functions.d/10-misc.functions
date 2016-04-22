@@ -85,31 +85,54 @@ function load_public_key_agent() {
     [ ! -S "${SSH_AUTH_SOCK}" ] && echo "auth sock file [${SSH_AUTH_SOCK}] not found, or not a socket - regenerating"
     ! ps ${SSH_AGENT_PID} >&- && echo "SSH agent process [${SSH_AGENT_PID}] not alive - regenerating"
   fi
-  eval $(keychain --eval --agents ssh --inherit any --host keydata $(get_ssh_key_files))
+  eval $(keychain --quiet --eval --agents ssh --inherit any --host keydata $(get_ssh_key_files))
+}
+
+function encrypt_password() {
+  python -c 'import crypt, getpass; print(crypt.crypt(getpass.getpass("Password: "), "'$(mksalt)'"))'
 }
 
 function generate_password() {
-  charspool=(
+  local charspool=(
     'a' 'b' 'c' 'd' 'e' 'f' 'g' 'h' 'i' 'j' 'k' 'l' 'm' 'n' 'o' 'p'
     'q' 'r' 's' 't' 'u' 'v' 'w' 'x' 'y' 'z' '0' '1' '2' '3' '4' '5' '6' '7'
     '8' '9' '0' 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O'
     'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z' '=' '.' ',' '-' '_'
   );
 
-  len=${#charspool[*]}
+  local len=${#charspool[*]}
 
   if [ $# -lt 1 ]; then
-    num=16;
+    local num=16;
   else
-    num=$1;
+    local num=$1;
   fi
 
-  password=""
+  local password=""
   for (( i = 0; i < $num; i++ )); do
     password="${password}${charspool[$((RANDOM % len))]}"
   done
 
-  lightcyan "${password}\n"
+  [[ -t 1 ]] && lightcyan "${password}\n" || echo "${password}"
+}
+
+function mksalt() {
+  local charspool=(
+    'a' 'b' 'c' 'd' 'e' 'f' 'g' 'h' 'i' 'j' 'k' 'l' 'm' 'n' 'o' 'p'
+    'q' 'r' 's' 't' 'u' 'v' 'w' 'x' 'y' 'z' '1' '2' '3' '4' '5' '6' '7'
+    '8' '9' '0' 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 
+    'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z' '.' '/'
+  );
+
+  local len=${#charspool[*]}
+  num=16;
+
+  local salt=""
+  for (( i = 0; i < $num; i++ )); do
+    salt="${salt}${charspool[$((RANDOM % len))]}"
+  done
+
+  printf "\$6\$${salt}"
 }
 
 
