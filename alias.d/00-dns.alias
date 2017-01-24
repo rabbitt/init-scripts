@@ -1,12 +1,9 @@
 alias dns='nslookup -sil'
-alias dig-simple='dig +noall +answer'
-alias dig='dig-simple +stats'
-alias dig-auth='dig-simple +authority'
 
 case "${OSX_VERSION}" in
-  10.1*) alias flushdns="sudo bash -c 'dscacheutil -flushcache; sudo killall -HUP mDNSResponder'";;
-  10.9*) alias flushdns="sudo killall -HUP mDNSResponder";;
-  10.8*) alias flushdns="dscacheutil -flushcache";;
+  10.1*) alias flushdns="sudo bash -c 'dscacheutil -flushcache; sudo killall -HUP mDNSResponder'; port unload dnsmasq; port load dnsmasq";;
+  10.9*) alias flushdns="sudo killall -HUP mDNSResponder; port unload dnsmasq; port load dnsmasq";;
+  10.8*) alias flushdns="dscacheutil -flushcache; port unload dnsmasq; port load dnsmasq";;
 esac
 
 function reload-resolver() {
