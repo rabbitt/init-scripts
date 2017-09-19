@@ -192,3 +192,25 @@ function dum() {
 
   du -h --max-depth=1 "${path}" | grep -iP '^\d+(\.\d+)?m'
 }
+
+truncate_and_edit ()
+{
+    [[ $# -ne 1 ]] && {
+        echo 'no file to truncate/edit!' 1>&2;
+        return 1
+    };
+    [[ ! -e "$1" ]] && {
+        echo 'file does not exist!' 1>&2;
+        return 1
+    };
+    [[ ! -f "$1" ]] && {
+        echo 'not a file!' 1>&2;
+        return 1
+    };
+    [[ ! -w "$1" ]] && {
+        echo 'file not writable by you!' 1>&2;
+        return 1
+    };
+    truncate -s0 "$1";
+    ${EDITOR:-nano} "$1"
+}
