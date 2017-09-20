@@ -7,17 +7,17 @@ if [[ -z ${CORES} ]]; then
   export CORES
 fi
 
-prepend_prompt_command set_last_exitcode 
+prepend_prompt_command set_last_exitcode
 
 function jobcount() {
   [ -z "${PROMPT_IGNORE_JOBCOUNT}" ] || return
   # clear any finished job notifications before we get a count
-  jobs >/dev/null 
+  jobs >/dev/null
   local count=$(jobs | wc -l)
   if [ ${count} -ge 1 ]; then
-    echo -en "$(white)-[$(cyan)jobs:$(bright_red)${count}$(white)]-"
+    echo -en "${COLOR_WHITE}-[${COLOR_CYAN}jobs:${COLOR_BRIGHT_RED}${count}${COLOR_WHITE}]-"
   else
-    echo -en "$(white)-[$(cyan)jobs:$(bright_white)0$(white)]-"
+    echo -en "${COLOR_WHITE}-[${COLOR_CYAN}jobs:${COLOR_BRIGHT_WHITE}0${COLOR_WHITE}]-"
   fi
 }
 
@@ -55,10 +55,10 @@ function print_git_branch {
   if [ -z "${branch}" ]; then
     hash="$(git rev-parse HEAD)"
     name=$(git name-rev --name-only ${hash})
-    echo -en "$(white)-[$(cyan)detached:${state}${name} (${hash:0:7})$(white)$(yellow)${remote}$(white)]-"
+    echo -en "${COLOR_WHITE}-[${COLOR_CYAN}detached:${state}${name} (${hash:0:7})${COLOR_WHITE}${COLOR_YELLOW}${remote}${COLOR_WHITE}]-"
   else
     # Set the final branch string.
-    echo -en "$(white)-[$(cyan)branch:${state}${branch}$(white)$(yellow)${remote}$(white)]-"
+    echo -en "${COLOR_WHITE}-[${COLOR_CYAN}branch:${state}${branch}${COLOR_WHITE}${COLOR_YELLOW}${remote}${COLOR_WHITE}]-"
   fi
 }
 
@@ -82,7 +82,7 @@ function load() {
   [ -z "${PROMPT_IGNORE_LOAD}" ] || return
   local five= ten= fifteen=
   read five ten fifteen <<< $(uptime | perl -p -e 's|^.*load averages?: ||g' | tr -d ',')
-  echo -en "$(white)-[$(cyan)load:$(load_color ${five}) $(load_color ${ten}) $(load_color ${fifteen})$(white)]-"
+  echo -en "${COLOR_WHITE}-[${COLOR_CYAN}load:$(load_color ${five}) $(load_color ${ten}) $(load_color ${fifteen})${COLOR_WHITE}]-"
 }
 
 function lec() {
@@ -90,11 +90,11 @@ function lec() {
   local status=${LEC}
   status=${status:=0}
   if [ $status -ge 1 ]; then
-    echo -en "$(white)-[$(cyan)last_exit_code:$(brightred)${status}$(white)]-"
+    echo -en "${COLOR_WHITE}-[${COLOR_CYAN}last_exit_code:${COLOR_BRIGHT_RED}${status}${COLOR_WHITE}]-"
   elif [ $status -lt 0 ]; then
-    echo -en "$(white)-[$(cyan)last_exit_code:$(brightyellow)${status}$(white)]-"
+    echo -en "${COLOR_WHITE}-[${COLOR_CYAN}last_exit_code:${COLOR_BRIGHT_YELLOW}${status}${COLOR_WHITE}]-"
   else
-    echo -en "$(white)-[$(cyan)last_exit_code:$(brightgreen)${status}$(white)]-"
+    echo -en "${COLOR_WHITE}-[${COLOR_CYAN}last_exit_code:${COLOR_BRIGHT_GREEN}${status}${COLOR_WHITE}]-"
   fi
 }
 
@@ -107,7 +107,7 @@ function rubyversion() {
 
   local prog= ver= other=
   read prog ver other <<< $(ruby -v)
-  echo -en "$(white)-[$(cyan)rv:$(brightgreen ${ver})$(white)]-"
+  echo -en "${COLOR_WHITE}-[${COLOR_CYAN}rv:${COLOR_BRIGHT_GREEN}${ver}${COLOR_WHITE}]-"
 }
 
 function extras_line() {
@@ -126,16 +126,16 @@ function main_line() {
   if [ "$(whoami)" = 'root' ]; then
     user="$(toupper ${user})"
     host="$(toupper ${host})"
-    user_host="\n${TITLEBAR}$(white)-[$(brightred)${USER}$(yellow)@$(bright_blue)${host}$(white)]- "
+    user_host="\n${TITLEBAR}${COLOR_WHITE}-[${COLOR_BRIGHT_RED}${USER}${COLOR_YELLOW}@${COLOR_BRIGHT_BLUE}${host}${COLOR_WHITE}]- "
   else
-    user_host="\n${TITLEBAR}$(white)-[$(yellow)${USER}$(white)@$(bright_blue)${host}$(white)]- "
+    user_host="\n${TITLEBAR}${COLOR_WHITE}-[${COLOR_YELLOW}${USER}${COLOR_WHITE}@${COLOR_BRIGHT_BLUE}${host}${COLOR_WHITE}]- "
   fi
 
-  echo -en "${user_host}-[$(brightblue)$(date)$(white)]- -[$(brightblack)${TTY}$(white)]-"
+  echo -en "${user_host}-[${COLOR_BRIGHT_BLUE}$(date)${COLOR_WHITE}]- -[${COLOR_BRIGHT_BLACK}${TTY}${COLOR_WHITE}]-"
 }
 
 function path_line() {
-  printf "$(white)-[$(cyan)%s$(white)]-" ${PWD/${HOME}/\~}
+  printf "${COLOR_WHITE}-[${COLOR_CYAN}%s${COLOR_WHITE}]-" ${PWD/${HOME}/\~}
 }
 
 function prompt_lines() {
@@ -146,6 +146,6 @@ function prompt_lines() {
 
 function prompt() {
   export PS1="\$(prompt_lines)"
-  export PS1="${PS1}\n\[$(yellow)\]\$\[$(normal_color)\] "
-  export PS2="$(brightcyan)-$(cyan)-$(brightblack)-$(normal_color) "
+  export PS1="${PS1}\n\[${COLOR_YELLOW}\]\$\[${COLOR_NORMAL}\] "
+  export PS2="${COLOR_BRIGHT_CYAN}-${COLOR_CYAN}-${COLOR_BRIGHT_BLACK}-${COLOR_NORMAL} "
 }
