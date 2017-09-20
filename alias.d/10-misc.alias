@@ -1,2 +1,2 @@
-alias git=hub
+[[ -f /opt/local/bin/hub ]] && alias git=hub
 alias srsync="rsync --rsync-path='sudo rsync'"
