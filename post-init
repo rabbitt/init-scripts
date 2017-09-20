@@ -1,13 +1,50 @@
 # after loading our environment (aliases, functions and env variables)
 # this is where you would run any functions or anything else to complete your setup
 
-# setup prompt
-prompt
+function __setup_prompt() {
+  if [[ -n ${TMUX} && -n ${commands[tmux]} ]]; then
+    case $(tmux showenv TERM 2>/dev/null) in
+      *256color) ;;
+      TERM=fbterm) TERM=screen-256color ;;
+      *) TERM=screen ;;
+    esac
+  fi
+
+  local prompt_initialized=0
+
+  if [[ ${SKIP_POWERLINE} -le 0 ]]; then
+    function window_title() {
+      printf "\033]0;${USER}@$(hostname -s):${PWD/$HOME/\\~}\007"
+    }
+
+    append_prompt_command window_title
+
+    export PATH="${PATH}:/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin"
+
+    # store old prompt command because powerline breaks it by adding a newline to it  
+    OLD_PROMPT_COMMAND="${PROMPT_COMMAND}"
+
+    if [ -f $(which powerline-daemon >&-) ]; then
+      if powerline_path=$(python -c 'import pkgutil; print pkgutil.get_loader("powerline").filename') 2>&-; then
+        powerline-daemon -q
+        POWERLINE_BASH_CONTINUATION=1
+        POWERLINE_BASH_SELECT=1
+        source ${powerline_path}/bindings/bash/powerline.sh
+      fi
+
+      export PROMPT_COMMAND="${OLD_PROMPT_COMMAND}"
+      unset OLD_PROMPT_COMMAND
+      prepend_prompt_command _powerline_set_prompt
+      prompt_initialized=1
+    fi
+  fi
+
+  [[ ${prompt_initialized} -eq 1 ]] || prompt
+}
+
+[[ ${SKIP_PROMPT} -le 0 ]] && __setup_prompt
 
 # load ssh public keys
 load_public_key_agent
 
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
-
-[[ -e ${HOME}/.iterm2_shell_integration.bash ]] && source ${HOME}/.iterm2_shell_integration.bash
-
+alias weather="curl http://www.wttr.in/${ZIP_CODE}"
