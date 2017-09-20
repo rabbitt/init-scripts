@@ -10,7 +10,7 @@ function readlink() {
   fi
 }
 
-function install_dependencies() {
+function _darwin_install_dependencies() {
   echo "Installing port dependencies. Please enter sudo password when asked."
   set -ev
   sudo port -qnc install findutils coreutils gsed gawk grep htop git \
@@ -21,11 +21,38 @@ function install_dependencies() {
   set +v
 }
 
+function _linux_install_dependencies() {
+  if [[ -f /etc/os-release ]]; then
+    local ostype=$(grep -Po '^ID=\K(.+)' /etc/os-release)
+    case "${ostype}" in
+      centos) sudo yum install -y htop git rsync curl tree openssl nano keychain;;
+      gentoo) sudo emerge -1av htop git rsync curl tree openssl nano keychain;;
+      ubuntu) sudo apt-get install -y htop git rsync curl tree openssl nano keychain;;
+      *) { echo "unknown os type: ${ostype}"; return 1; };;
+    esac
+  fi
+}
+
+function install_dependencies() {
+  case $(uname -s) in
+    *Linux*) _linux_install_dependencies;;
+    *Darwin*) _darwin_install_dependencies;;
+  esac
+}
+
 function check_dependencies() {
-  if [ "$(/usr/bin/uname -s)" != "Darwin" ]; then
-    echo "These init scripts are designed for OSX and won't necessarily run correctly on other systems"
-    return 1
-  elif [ ! -x /opt/local/bin/port ]; then
+  case $(uname -s) in
+    *Darwin*) _darwin_check_dependencies;;
+    *Linux*) _linux_check_dependencies;;
+  esac
+}
+
+function _linux_check_dependencies() {
+  return 0
+}
+
+function _darwin_check_dependencies() {
+  if [[ ! -x /opt/local/bin/port ]]; then
     echo "These init scripts depend on MacPorts being installed."
     read major minor patch <<< "$(sw_vers -productVersion | tr '.' ' ')"
 

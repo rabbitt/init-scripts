@@ -1,21 +1,21 @@
-function dash() {
-  if [ ! -d /Applications/Dash.app ]; then
-    echo "Dash not installed - using default 'man' application"
-    exit 1
-  fi
+if [[ $(uname -s) =~ Darwin ]]; then
+  function dash() {
+    if [ ! -d /Applications/Dash.app ]; then
+      echo "Dash not installed - using default 'man' application"
+      exit 1
+    fi
 
-  [ $# -le 0 ] && return 1 || open dash://"$@";
-}
+    [ $# -le 0 ] && return 1 || open dash://"$@";
+  }
 
+  function man() {
+    [ $# -le 0 ] && echo "did you mean to look for something in the manual?" && exit 1
 
-function man() {
-  [ $# -le 0 ] && echo "did you mean to look for something in the manual?" && exit 1
-
-  if [ ! -d /Applications/Dash.app ]; then
-    echo "Dash not installed - using default 'man' application"
-    /usr/bin/man "$@"
-  else
-    dash man:"$*"
-  fi
-}
-
+    if [ ! -d /Applications/Dash.app ]; then
+      echo "Dash not installed - using default 'man' application"
+      /usr/bin/man "$@"
+    else
+      dash man:"$*"
+    fi 
+  }
+fi

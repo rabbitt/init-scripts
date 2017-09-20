@@ -70,20 +70,20 @@ function check_certificate_key() {
 
 function get_ssh_key_files() {
   local list=
-  for keyfile in $(/usr/bin/egrep -c 'BEGIN.+PRIVATE KEY' ~/.ssh/* | grep :1 | cut -d: -f1); do
+  for keyfile in $(/bin/egrep -c 'BEGIN.+PRIVATE KEY' ~/.ssh/* | grep :1 | cut -d: -f1); do
     ssh-keygen -l -f ${keyfile}.pub &>/dev/null && list="${list} $(basename ${keyfile})"
   done
   echo $list
 }
 
 function load_public_key_agent() {
-	local keys="$*"
-  which -s keychain || return 0
+  local keys="$*"
+  /bin/which keychain >/dev/null 2>&1 || return 0
   [[ $SSH_AUTH_SOCK =~ launchd ]] && unset SSH_AUTH_SOCK
   [ -r "${HOME}/.keychain/keydata-sh" ] && source "${HOME}/.keychain/keydata-sh"
-  if [ ! -S ${SSH_AUTH_SOCK} ] || ! ps ${SSH_AGENT_PID} >&-; then
+  if [ ! -S ${SSH_AUTH_SOCK} ] || ! ps ${SSH_AGENT_PID} >/dev/null 2>&1; then
     [ ! -S "${SSH_AUTH_SOCK}" ] && echo "auth sock file [${SSH_AUTH_SOCK}] not found, or not a socket - regenerating"
-    ! ps ${SSH_AGENT_PID} >&- && echo "SSH agent process [${SSH_AGENT_PID}] not alive - regenerating"
+    ! ps ${SSH_AGENT_PID} >/dev/null 2>&1 && echo "SSH agent process [${SSH_AGENT_PID}] not alive - regenerating"
   fi
   eval $(keychain --quiet --eval --agents ssh --inherit any --host keydata $(get_ssh_key_files))
 }

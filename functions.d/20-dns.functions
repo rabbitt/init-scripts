@@ -1,5 +1,5 @@
 function local_domain() {
-  ifconfig ppp0 1>&- 2>&- && echo ${WORK_DOMAIN} || echo ${HOME_DOMAIN}
+  ifconfig ppp0 >/dev/null 2>&1 && echo ${WORK_DOMAIN} || echo ${HOME_DOMAIN}
 }
 
 function nameservers {
